@@ -1,0 +1,2 @@
+# Keep generated content manifests byte-stable across OS checkouts.
+content/generated/*.json text eol=lf
