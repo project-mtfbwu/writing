@@ -18,9 +18,12 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "content:index": "tsx scripts/content-index.ts",
-    "content:check": "tsx scripts/content-check.ts"
+    "content:check": "tsx scripts/content-check.ts",
+    "supabase:types": "supabase gen types typescript --local -o src/types/database.ts"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.3",
+    "@supabase/supabase-js": "^2.110.8",
     "github-slugger": "^2.0.0",
     "mdast-util-to-string": "^4.0.0",
     "next": "16.2.11",

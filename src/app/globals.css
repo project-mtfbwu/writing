@@ -1461,3 +1461,133 @@ tr[data-reference='true'] th {
     grid-template-columns: 1fr;
   }
 }
+
+/* Auth + projects */
+.auth-page,
+.project-page {
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: 2.25rem 1.25rem 4rem;
+  font-family: var(--font-source-sans), system-ui, sans-serif;
+}
+
+.auth-page h1,
+.project-page h1 {
+  font-family: var(--font-literata), Georgia, serif;
+}
+
+.auth-form,
+.project-form,
+.project-builder__fields {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+}
+
+.auth-form label,
+.project-form label,
+.project-builder__fields label,
+.learn-apply label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.auth-form input,
+.project-form input,
+.project-form select,
+.project-builder textarea,
+.learn-apply select,
+.learn-apply input[type='text'],
+.learn-apply input:not([type='checkbox']) {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+}
+
+.auth-form button,
+.project-form button,
+.project-builder button,
+.project-page__actions button,
+.learn-apply button {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+  padding: 0.5rem 0.8rem;
+  font: inherit;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.auth-error {
+  color: #8a4b3a;
+}
+
+.auth-ok {
+  color: #3d6b4f;
+}
+
+.auth-notice {
+  border-left: 3px solid var(--border);
+  padding: 0.75rem 0 0.75rem 0.85rem;
+  margin: 1rem 0;
+  color: var(--muted);
+}
+
+.project-list {
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.project-list a {
+  display: grid;
+  gap: 0.25rem;
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.65rem;
+}
+
+.project-page__actions,
+.project-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.project-builder {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(14rem, 0.8fr);
+  gap: 1.25rem;
+  margin-top: 1rem;
+}
+
+.project-builder--characters {
+  grid-template-columns: 12rem minmax(0, 1fr);
+}
+
+.project-builder__preview pre {
+  white-space: pre-wrap;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0.85rem;
+}
+
+.learn-apply__confirm {
+  display: flex !important;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+@media (max-width: 800px) {
+  .project-builder,
+  .project-builder--characters {
+    grid-template-columns: 1fr;
+  }
+}

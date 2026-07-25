@@ -3,18 +3,35 @@
 import { useMemo, useState } from "react";
 import type { Exercise } from "@/types/learning";
 import { gradeExercise, type ExerciseResponse } from "@/lib/learning/exercises";
+import { ApplyToProject } from "@/components/learning/ApplyToProject";
 
 type ExercisePanelProps = {
   exercise: Exercise;
   onResult: (result: { passed: boolean; feedback: string; response: ExerciseResponse }) => void;
+  courseId: string;
+  lessonId: string;
+  contentVersion: string;
+  attemptNumber: number;
 };
 
-export function ExercisePanel({ exercise, onResult }: ExercisePanelProps) {
+export function ExercisePanel({
+  exercise,
+  onResult,
+  courseId,
+  lessonId,
+  contentVersion,
+  attemptNumber,
+}: ExercisePanelProps) {
   const [selected, setSelected] = useState<string[]>([]);
   const [order, setOrder] = useState(() => exercise.options.map((option) => option.id));
   const [text, setText] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [passed, setPassed] = useState<boolean | null>(null);
+  const [lastResult, setLastResult] = useState<{
+    passed: boolean;
+    feedback: string;
+    response: ExerciseResponse;
+  } | null>(null);
 
   const isMulti = exercise.type === "multi-select" || exercise.type === "compare-bad-better";
   const isOrder = exercise.type === "reorder-beats";
@@ -61,7 +78,9 @@ export function ExercisePanel({ exercise, onResult }: ExercisePanelProps) {
     const result = gradeExercise(exercise, response);
     setFeedback(result.feedback);
     setPassed(result.passed);
-    onResult({ ...result, response });
+    const payload = { ...result, response };
+    setLastResult(payload);
+    onResult(payload);
   }
 
   return (
@@ -127,16 +146,14 @@ export function ExercisePanel({ exercise, onResult }: ExercisePanelProps) {
         </p>
       ) : null}
 
-      <div className="learn-apply">
-        <h4>Apply to project</h4>
-        <p>
-          Eventually updates: <strong>{exercise.applyTarget.entity}</strong>
-        </p>
-        <p>{exercise.applyTarget.description}</p>
-        <button type="button" disabled>
-          Apply to project (coming soon)
-        </button>
-      </div>
+      <ApplyToProject
+        exercise={exercise}
+        lastResult={lastResult}
+        courseId={courseId}
+        lessonId={lessonId}
+        contentVersion={contentVersion}
+        attemptNumber={attemptNumber}
+      />
     </section>
   );
 }

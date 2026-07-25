@@ -299,7 +299,17 @@ export function LessonPlayer({
         ) : null}
 
         {activeExercise ? (
-          <ExercisePanel exercise={activeExercise} onResult={handleExerciseResult} />
+          <ExercisePanel
+            key={activeExercise.id}
+            exercise={activeExercise}
+            onResult={handleExerciseResult}
+            courseId={course.id}
+            lessonId={lesson.id}
+            contentVersion={CONTENT_VERSION}
+            attemptNumber={
+              (progress.completedExerciseIds.includes(activeExercise.id) ? 1 : 0) + 1
+            }
+          />
         ) : (
           <p className="learn-meta">No exercises configured.</p>
         )}

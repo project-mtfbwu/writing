@@ -4,7 +4,7 @@ const navItems = [
   { label: "Learn", href: "/learn" },
   { label: "Atlas", href: "/atlas" },
   { label: "Write", href: "/projects" },
-  { label: "Test", href: "/projects" },
+  { label: "Sign in", href: "/login" },
 ] as const;
 
 export default function HomePage() {
