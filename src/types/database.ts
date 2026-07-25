@@ -228,6 +228,141 @@ export type Database = {
         };
         Relationships: [];
       };
+      beat_templates: {
+        Row: {
+          key: string;
+          name: string;
+          summary: string;
+          evidence_status: "E1" | "E2" | "E3" | "E4" | "E5";
+          craft_note: string;
+          beats: Json;
+          is_system: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          key: string;
+          name: string;
+          summary: string;
+          evidence_status?: "E1" | "E2" | "E3" | "E4" | "E5";
+          craft_note?: string;
+          beats?: Json;
+          is_system?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          key?: string;
+          name?: string;
+          summary?: string;
+          evidence_status?: "E1" | "E2" | "E3" | "E4" | "E5";
+          craft_note?: string;
+          beats?: Json;
+          is_system?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      beats: {
+        Row: {
+          id: string;
+          project_id: string;
+          draft_id: string;
+          user_id: string;
+          name: string;
+          description: string;
+          color_key: "neutral" | "setup" | "confrontation" | "resolution" | "character" | "theme";
+          sort_order: number;
+          template_key: string | null;
+          target_percentage: number | null;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          draft_id: string;
+          user_id: string;
+          name: string;
+          description?: string;
+          color_key?: "neutral" | "setup" | "confrontation" | "resolution" | "character" | "theme";
+          sort_order?: number;
+          template_key?: string | null;
+          target_percentage?: number | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          draft_id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string;
+          color_key?: "neutral" | "setup" | "confrontation" | "resolution" | "character" | "theme";
+          sort_order?: number;
+          template_key?: string | null;
+          target_percentage?: number | null;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      scenes: {
+        Row: {
+          id: string;
+          project_id: string;
+          draft_id: string;
+          user_id: string;
+          beat_id: string | null;
+          heading: string;
+          summary: string;
+          location: string;
+          time_of_day: string;
+          sort_order: number;
+          status: "idea" | "outlined" | "drafted" | "polished";
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          draft_id: string;
+          user_id: string;
+          beat_id?: string | null;
+          heading?: string;
+          summary?: string;
+          location?: string;
+          time_of_day?: string;
+          sort_order?: number;
+          status?: "idea" | "outlined" | "drafted" | "polished";
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          draft_id?: string;
+          user_id?: string;
+          beat_id?: string | null;
+          heading?: string;
+          summary?: string;
+          location?: string;
+          time_of_day?: string;
+          sort_order?: number;
+          status?: "idea" | "outlined" | "drafted" | "polished";
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       lesson_progress: {
         Row: {
           id: string;
@@ -461,7 +596,12 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      ensure_project_draft: {
+        Args: { p_project_id: string };
+        Returns: string;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

@@ -40,6 +40,9 @@ export default async function ProjectDetailPage({ params }: PageProps) {
       <nav className="project-nav">
         <Link href={`/projects/${project.id}/premise`}>Premise</Link>
         <Link href={`/projects/${project.id}/characters`}>Characters</Link>
+        <Link href={`/projects/${project.id}/structure`}>Structure</Link>
+        <Link href={`/projects/${project.id}/beats`}>Beats</Link>
+        <Link href={`/projects/${project.id}/scenes`}>Scenes</Link>
       </nav>
     </main>
   );
