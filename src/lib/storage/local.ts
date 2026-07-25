@@ -9,10 +9,25 @@ import {
   type UserDataStore,
 } from "@/lib/storage/types";
 
-function readList<T>(key: string, schema: { parse: (value: unknown) => T }): T[] {
-  if (typeof window === "undefined") return [];
+/** Shared localStorage JSON helpers (bookmarks, notes, learning progress). */
+export function readStorageRaw(key: string): string | null {
+  if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(key);
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+export function writeStorageRaw(key: string, value: string): void {
+  if (typeof window === "undefined") return;
+  // Never store complete books — only lightweight user records.
+  window.localStorage.setItem(key, value);
+}
+
+function readList<T>(key: string, schema: { parse: (value: unknown) => T }): T[] {
+  try {
+    const raw = readStorageRaw(key);
     if (!raw) return [];
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
@@ -23,9 +38,7 @@ function readList<T>(key: string, schema: { parse: (value: unknown) => T }): T[]
 }
 
 function writeList<T>(key: string, items: T[]): void {
-  if (typeof window === "undefined") return;
-  // Never store complete books — only lightweight user records.
-  window.localStorage.setItem(key, JSON.stringify(items));
+  writeStorageRaw(key, JSON.stringify(items));
 }
 
 export function createLocalUserDataStore(): UserDataStore {
