@@ -7,6 +7,12 @@ import {
 } from "../src/lib/content/parse";
 import { validateContentManifest } from "../src/lib/content/validate";
 import { ContentManifestSchema } from "../src/types/content";
+import {
+  buildSearchIndex,
+  GENERATED_SEARCH_INDEX_RELATIVE,
+  serializeSearchIndex,
+} from "../src/lib/search";
+import { SearchIndexSchema } from "../src/types/search";
 
 async function main() {
   const repoRoot = process.cwd();
@@ -20,6 +26,14 @@ async function main() {
   }
 
   const result = validateContentManifest(manifest, repoRoot);
+  const searchIndex = buildSearchIndex(manifest);
+  const searchParsed = SearchIndexSchema.safeParse(searchIndex);
+  if (!searchParsed.success) {
+    console.error("Search index failed schema validation:");
+    console.error(searchParsed.error.message);
+    process.exitCode = 1;
+    return;
+  }
 
   for (const warning of result.warnings) {
     console.warn(`[warn] ${warning.code}: ${warning.message}`);
@@ -46,6 +60,26 @@ async function main() {
     console.warn(`[warn] missing-manifest: ${GENERATED_MANIFEST_RELATIVE} not found (run content:index)`);
   }
 
+  const searchPath = path.join(repoRoot, GENERATED_SEARCH_INDEX_RELATIVE);
+  if (existsSync(searchPath)) {
+    const onDisk = readFileSync(searchPath, "utf8");
+    const expected = serializeSearchIndex(searchIndex);
+    if (onDisk !== expected) {
+      console.error(
+        `[error] stale-search-index: ${GENERATED_SEARCH_INDEX_RELATIVE} is out of date. Run pnpm content:index.`,
+      );
+      result.errors.push({
+        code: "stale-search-index",
+        message: "Generated search index does not match current sources",
+        severity: "error",
+      });
+    }
+  } else {
+    console.warn(
+      `[warn] missing-search-index: ${GENERATED_SEARCH_INDEX_RELATIVE} not found (run content:index)`,
+    );
+  }
+
   if (result.errors.length > 0) {
     console.error(`content:check failed with ${result.errors.length} error(s)`);
     process.exitCode = 1;
@@ -53,7 +87,7 @@ async function main() {
   }
 
   console.log(
-    `content:check passed (${manifest.stats.documentCount} documents, ${manifest.stats.chapterCount} chapters, ${manifest.stats.headingCount} headings)`,
+    `content:check passed (${manifest.stats.documentCount} documents, ${manifest.stats.chapterCount} chapters, ${searchIndex.documentCount} search docs)`,
   );
 }
 

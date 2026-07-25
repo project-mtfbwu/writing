@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["yaml"],
   outputFileTracingIncludes: {
     "/read/**": ["./content/source/**/*", "./content/generated/**/*"],
+    "/library": ["./content/source/**/*", "./content/generated/**/*"],
     "/dev/content": ["./content/source/**/*", "./content/generated/**/*"],
   },
 };

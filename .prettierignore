@@ -13,3 +13,4 @@ test-results
 content/generated/**
 !content/generated/.gitkeep
 !content/generated/manifest.json
+!content/generated/search-index.json

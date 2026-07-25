@@ -33,8 +33,14 @@ export function ReaderControls({
   return (
     <div className="reader-controls print:hidden" role="region" aria-label="Reader controls">
       <div className="reader-controls__row">
-        <Link href="/read" className="reader-controls__link">
+        <Link href="/library" className="reader-controls__link">
           Library
+        </Link>
+        <span className="reader-controls__sep" aria-hidden>
+          /
+        </span>
+        <Link href="/read" className="reader-controls__link">
+          Read
         </Link>
         <span className="reader-controls__sep" aria-hidden>
           /

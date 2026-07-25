@@ -1,11 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { EVIDENCE_DEFINITIONS, type ReadingDepth } from "@/lib/reader/modes";
 import type { ConceptLink } from "@/types/content";
+import type { RelatedItem } from "@/lib/library/related";
 
 type StudyRailProps = {
   depth: ReadingDepth;
   concepts: ConceptLink[];
+  related?: RelatedItem[];
   chapterProgress: number;
   bookProgress: number;
   open: boolean;
@@ -15,6 +18,7 @@ type StudyRailProps = {
 export function StudyRail({
   depth,
   concepts,
+  related = [],
   chapterProgress,
   bookProgress,
   open,
@@ -36,9 +40,7 @@ export function StudyRail({
               style={{ width: `${Math.round(chapterProgress * 100)}%` }}
             />
           </div>
-          <p className="reader-progress__label">
-            Chapter {Math.round(chapterProgress * 100)}%
-          </p>
+          <p className="reader-progress__label">Chapter {Math.round(chapterProgress * 100)}%</p>
         </div>
         <div className="reader-progress" aria-label="Book progress">
           <div className="reader-progress__track">
@@ -49,6 +51,19 @@ export function StudyRail({
           </div>
           <p className="reader-progress__label">Book {Math.round(bookProgress * 100)}%</p>
         </div>
+
+        {related.length > 0 ? (
+          <>
+            <p className="reader-rail__heading">Related</p>
+            <ul className="reader-concepts">
+              {related.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href}>{item.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
 
         {showStudy ? (
           <>

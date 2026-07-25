@@ -2,14 +2,23 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type { Chapter, ConceptLink, ContentBlock, Section } from "@/types/content";
-import { filterBlocksForDepth, showsConnectedConcepts } from "@/lib/reader/modes";
+import {
+  filterBlocksForDepth,
+  ReadingDepthSchema,
+  showsConnectedConcepts,
+  type ReadingDepth,
+} from "@/lib/reader/modes";
 import { escapeRawMarkdown } from "@/lib/reader/persistence";
+import { createUserDataStore } from "@/lib/storage";
+import type { RelatedItem } from "@/lib/library/related";
 import { useReader } from "@/components/reader/ReaderProvider";
 import { ReaderControls } from "@/components/reader/ReaderControls";
 import { ContentsRail } from "@/components/reader/ContentsRail";
 import { StudyRail } from "@/components/reader/StudyRail";
 import { BlockRenderer } from "@/components/reader/BlockRenderer";
+import { SectionTools } from "@/components/library/SectionTools";
 
 export type ChapterPayload = {
   chapter: Chapter;
@@ -28,6 +37,7 @@ type BookReaderProps = {
   chapterIndex: number;
   rawMarkdown: string;
   continuousChapters?: ChapterPayload[];
+  related?: RelatedItem[];
 };
 
 export function BookReader({
@@ -40,16 +50,18 @@ export function BookReader({
   chapterIndex,
   rawMarkdown,
   continuousChapters,
+  related = [],
 }: BookReaderProps) {
-  const { preferences, updatePosition, position, ready } = useReader();
+  const { preferences, setPreferences, updatePosition, position, ready } = useReader();
+  const searchParams = useSearchParams();
   const [tocOpen, setTocOpen] = useState(false);
   const [studyOpen, setStudyOpen] = useState(false);
   const articleRef = useRef<HTMLElement>(null);
   const restoredRef = useRef(false);
+  const store = useMemo(() => createUserDataStore(), []);
 
-  const payloads = preferences.continuousBook && continuousChapters?.length
-    ? continuousChapters
-    : [current];
+  const payloads =
+    preferences.continuousBook && continuousChapters?.length ? continuousChapters : [current];
 
   const chapterProgress = chapters.length === 0 ? 0 : (chapterIndex + 1) / chapters.length;
   const bookProgress = chapterProgress;
@@ -60,8 +72,70 @@ export function BookReader({
     return `/read/${bookId}/${position.chapterSlug}`;
   }, [position, bookId, current.chapter.slug]);
 
+  const activeSection = useMemo(() => {
+    const sectionParam = searchParams.get("section");
+    if (sectionParam) {
+      return (
+        current.sections.find(
+          (section) => section.id === sectionParam || section.headingId === sectionParam,
+        ) ?? null
+      );
+    }
+    return current.sections[0] ?? null;
+  }, [searchParams, current.sections]);
+
+  useEffect(() => {
+    const modeParam = searchParams.get("mode");
+    if (!modeParam) return;
+    const parsed = ReadingDepthSchema.safeParse(modeParam);
+    if (parsed.success && parsed.data !== preferences.depth) {
+      setPreferences({ depth: parsed.data as ReadingDepth });
+    }
+  }, [searchParams, preferences.depth, setPreferences]);
+
+  useEffect(() => {
+    void store.pushRecent({
+      bookId,
+      bookTitle,
+      chapterId: current.chapter.id,
+      chapterSlug: current.chapter.slug,
+      chapterTitle: current.chapter.title,
+      sectionId: activeSection?.id ?? null,
+      href: `/read/${bookId}/${current.chapter.slug}`,
+      openedAt: new Date().toISOString(),
+      depth: preferences.depth,
+    });
+  }, [
+    store,
+    bookId,
+    bookTitle,
+    current.chapter.id,
+    current.chapter.slug,
+    current.chapter.title,
+    activeSection?.id,
+    preferences.depth,
+  ]);
+
   useEffect(() => {
     if (!ready || restoredRef.current) return;
+
+    const sectionParam = searchParams.get("section");
+    const hash = typeof window !== "undefined" ? window.location.hash.replace(/^#/, "") : "";
+    const targetId = hash || sectionParam;
+
+    if (targetId) {
+      const el =
+        document.getElementById(decodeURIComponent(targetId)) ??
+        document.querySelector<HTMLElement>(
+          `[data-section-id="${CSS.escape(decodeURIComponent(targetId))}"]`,
+        );
+      if (el) {
+        el.scrollIntoView({ block: "start" });
+        restoredRef.current = true;
+        return;
+      }
+    }
+
     if (!position || position.bookId !== bookId || position.chapterSlug !== current.chapter.slug) {
       restoredRef.current = true;
       return;
@@ -81,16 +155,14 @@ export function BookReader({
       window.scrollTo({ top: Math.max(0, max * position.scrollProgress) });
     }
     restoredRef.current = true;
-  }, [ready, position, bookId, current.chapter.slug]);
+  }, [ready, position, bookId, current.chapter.slug, searchParams]);
 
   useEffect(() => {
     const onScroll = () => {
       const article = articleRef.current;
       if (!article) return;
 
-      const sectionNodes = Array.from(
-        article.querySelectorAll<HTMLElement>("[data-section-id]"),
-      );
+      const sectionNodes = Array.from(article.querySelectorAll<HTMLElement>("[data-section-id]"));
       let nearestSection: string | null = null;
       let best = Number.POSITIVE_INFINITY;
       for (const node of sectionNodes) {
@@ -153,6 +225,19 @@ export function BookReader({
             </p>
           </header>
 
+          <SectionTools
+            target={{
+              bookId,
+              bookTitle,
+              chapterId: current.chapter.id,
+              chapterSlug: current.chapter.slug,
+              chapterTitle: current.chapter.title,
+              sectionId: activeSection?.id ?? null,
+              sectionTitle: activeSection?.title ?? null,
+              headingId: activeSection?.headingId ?? current.chapter.headingId,
+            }}
+          />
+
           {preferences.depth === "raw" ? (
             <pre
               className="reader-raw"
@@ -207,6 +292,7 @@ export function BookReader({
         <StudyRail
           depth={preferences.depth}
           concepts={showsConnectedConcepts(preferences.depth) ? current.concepts : []}
+          related={related}
           chapterProgress={chapterProgress}
           bookProgress={bookProgress}
           open={studyOpen}

@@ -1,5 +1,6 @@
 const navItems = [
   { label: "Read", href: "/read" },
+  { label: "Library", href: "/library" },
   { label: "Learn", href: "/learn" },
   { label: "Atlas", href: "/atlas" },
   { label: "Write", href: "/projects" },

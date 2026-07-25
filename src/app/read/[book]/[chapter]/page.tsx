@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { BookReader } from "@/components/reader/BookReader";
 import { ReaderProvider } from "@/components/reader/ReaderProvider";
 import {
@@ -9,6 +10,7 @@ import {
   readSourceMarkdown,
   loadContentManifest,
 } from "@/lib/reader/catalog";
+import { getRelatedContent } from "@/lib/library/related";
 import type { ChapterPayload } from "@/components/reader/BookReader";
 
 export const dynamic = "force-dynamic";
@@ -47,23 +49,31 @@ export default async function ChapterReaderPage({ params }: PageProps) {
 
   const current = toPayload(chapter);
   const continuousChapters = chapters.map(toPayload);
+  const related = getRelatedContent(manifest, {
+    bookId,
+    chapterId: chapter.id,
+    blockIds: chapter.blockIds,
+  });
 
   const document = manifest.documents.find((item) => item.id === bookId);
   const rawMarkdown = document ? readSourceMarkdown(document.relativePath) : "";
 
   return (
     <ReaderProvider bookId={bookId}>
-      <BookReader
-        bookId={bookId}
-        bookTitle={book.title}
-        chapters={chapters}
-        current={current}
-        previous={previous}
-        next={next}
-        chapterIndex={Math.max(0, chapterIndex)}
-        rawMarkdown={rawMarkdown}
-        continuousChapters={continuousChapters}
-      />
+      <Suspense fallback={<p className="library-meta">Loading reader…</p>}>
+        <BookReader
+          bookId={bookId}
+          bookTitle={book.title}
+          chapters={chapters}
+          current={current}
+          previous={previous}
+          next={next}
+          chapterIndex={Math.max(0, chapterIndex)}
+          rawMarkdown={rawMarkdown}
+          continuousChapters={continuousChapters}
+          related={related}
+        />
+      </Suspense>
     </ReaderProvider>
   );
 }
