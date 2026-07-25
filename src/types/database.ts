@@ -428,6 +428,25 @@ export type Database = {
           sort_order: number;
           status: "idea" | "outlined" | "drafted" | "polished";
           metadata: Json;
+          pov_owner: string;
+          scene_objective: string;
+          why_now: string;
+          obstacle: string;
+          tactics: string;
+          turn_description: string;
+          charge_in: string;
+          charge_out: string;
+          object: string;
+          light_source: string;
+          environment: string;
+          background_life: string;
+          register: string;
+          deletion_test_result: string;
+          long_draft: string;
+          dialogue_notes: string;
+          setups_provided: string;
+          payoffs_supported: string;
+          character_decisions_supported: string;
           created_at: string;
           updated_at: string;
         };
@@ -444,6 +463,25 @@ export type Database = {
           sort_order?: number;
           status?: "idea" | "outlined" | "drafted" | "polished";
           metadata?: Json;
+          pov_owner?: string;
+          scene_objective?: string;
+          why_now?: string;
+          obstacle?: string;
+          tactics?: string;
+          turn_description?: string;
+          charge_in?: string;
+          charge_out?: string;
+          object?: string;
+          light_source?: string;
+          environment?: string;
+          background_life?: string;
+          register?: string;
+          deletion_test_result?: string;
+          long_draft?: string;
+          dialogue_notes?: string;
+          setups_provided?: string;
+          payoffs_supported?: string;
+          character_decisions_supported?: string;
           created_at?: string;
           updated_at?: string;
         };
@@ -460,6 +498,202 @@ export type Database = {
           sort_order?: number;
           status?: "idea" | "outlined" | "drafted" | "polished";
           metadata?: Json;
+          pov_owner?: string;
+          scene_objective?: string;
+          why_now?: string;
+          obstacle?: string;
+          tactics?: string;
+          turn_description?: string;
+          charge_in?: string;
+          charge_out?: string;
+          object?: string;
+          light_source?: string;
+          environment?: string;
+          background_life?: string;
+          register?: string;
+          deletion_test_result?: string;
+          long_draft?: string;
+          dialogue_notes?: string;
+          setups_provided?: string;
+          payoffs_supported?: string;
+          character_decisions_supported?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      micro_beats: {
+        Row: {
+          id: string;
+          project_id: string;
+          scene_id: string;
+          user_id: string;
+          sort_order: number;
+          action_tactic: string;
+          reaction_resistance: string;
+          adjustment: string;
+          load_or_absorb: "Load" | "Absorb";
+          element_range_start: number | null;
+          element_range_end: number | null;
+          duration_estimate_seconds: number | null;
+          notes: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          scene_id: string;
+          user_id: string;
+          sort_order?: number;
+          action_tactic?: string;
+          reaction_resistance?: string;
+          adjustment?: string;
+          load_or_absorb?: "Load" | "Absorb";
+          element_range_start?: number | null;
+          element_range_end?: number | null;
+          duration_estimate_seconds?: number | null;
+          notes?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          scene_id?: string;
+          user_id?: string;
+          sort_order?: number;
+          action_tactic?: string;
+          reaction_resistance?: string;
+          adjustment?: string;
+          load_or_absorb?: "Load" | "Absorb";
+          element_range_start?: number | null;
+          element_range_end?: number | null;
+          duration_estimate_seconds?: number | null;
+          notes?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      scene_review_runs: {
+        Row: {
+          id: string;
+          project_id: string;
+          scene_id: string;
+          user_id: string;
+          mode: "guided" | "expert";
+          ruleset_version: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          scene_id: string;
+          user_id: string;
+          mode?: "guided" | "expert";
+          ruleset_version?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          scene_id?: string;
+          user_id?: string;
+          mode?: "guided" | "expert";
+          ruleset_version?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      scene_review_findings: {
+        Row: {
+          id: string;
+          run_id: string;
+          project_id: string;
+          scene_id: string;
+          user_id: string;
+          rule_id: string;
+          severity: "suggestion" | "warning" | "blocker";
+          evidence_location: string;
+          explanation: string;
+          atlas_concept_id: string;
+          lesson_id: string;
+          exercise_id: string;
+          book_id: string;
+          chapter_slug: string;
+          section_id: string | null;
+          heading_id: string | null;
+          source_label: string;
+          eli5_topic: string;
+          dialogue_cut_tag:
+            | "states_emotion"
+            | "repeats_known_information"
+            | "answers_directly"
+            | "replaceable_by_image_object_silence"
+            | null;
+          status: "open" | "accepted" | "dismissed" | "deferred";
+          user_response: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          run_id: string;
+          project_id: string;
+          scene_id: string;
+          user_id: string;
+          rule_id: string;
+          severity?: "suggestion" | "warning" | "blocker";
+          evidence_location?: string;
+          explanation: string;
+          atlas_concept_id?: string;
+          lesson_id?: string;
+          exercise_id?: string;
+          book_id?: string;
+          chapter_slug?: string;
+          section_id?: string | null;
+          heading_id?: string | null;
+          source_label?: string;
+          eli5_topic?: string;
+          dialogue_cut_tag?:
+            | "states_emotion"
+            | "repeats_known_information"
+            | "answers_directly"
+            | "replaceable_by_image_object_silence"
+            | null;
+          status?: "open" | "accepted" | "dismissed" | "deferred";
+          user_response?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          run_id?: string;
+          project_id?: string;
+          scene_id?: string;
+          user_id?: string;
+          rule_id?: string;
+          severity?: "suggestion" | "warning" | "blocker";
+          evidence_location?: string;
+          explanation?: string;
+          atlas_concept_id?: string;
+          lesson_id?: string;
+          exercise_id?: string;
+          book_id?: string;
+          chapter_slug?: string;
+          section_id?: string | null;
+          heading_id?: string | null;
+          source_label?: string;
+          eli5_topic?: string;
+          dialogue_cut_tag?:
+            | "states_emotion"
+            | "repeats_known_information"
+            | "answers_directly"
+            | "replaceable_by_image_object_silence"
+            | null;
+          status?: "open" | "accepted" | "dismissed" | "deferred";
+          user_response?: string;
           created_at?: string;
           updated_at?: string;
         };

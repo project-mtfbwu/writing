@@ -50,6 +50,7 @@ export default async function StructurePage({ params }: PageProps) {
       <nav className="project-nav">
         <Link href={`/projects/${projectId}/beats`}>Beats</Link>
         <Link href={`/projects/${projectId}/scenes`}>Scenes</Link>
+        <Link href={`/projects/${projectId}/scene-lab`}>Scene Lab</Link>
         <Link href={`/projects/${projectId}/screenplay`}>Screenplay</Link>
       </nav>
       <BeatBoard projectId={projectId} initialBeats={beats} initialScenes={scenes} />

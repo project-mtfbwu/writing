@@ -46,6 +46,7 @@ export default async function ScreenplayPage({ params, searchParams }: PageProps
       <nav className="project-nav">
         <Link href={`/projects/${projectId}/structure`}>Structure</Link>
         <Link href={`/projects/${projectId}/scenes`}>Scenes</Link>
+        <Link href={`/projects/${projectId}/scene-lab`}>Scene Lab</Link>
       </nav>
       <ScreenplayEditor
         projectId={projectId}

@@ -33,6 +33,25 @@ export function mapSceneRow(row: Tables<"scenes">): Scene {
     sortOrder: row.sort_order,
     status: row.status,
     metadata: (row.metadata ?? {}) as Record<string, unknown>,
+    povOwner: row.pov_owner ?? "",
+    sceneObjective: row.scene_objective ?? "",
+    whyNow: row.why_now ?? "",
+    obstacle: row.obstacle ?? "",
+    tactics: row.tactics ?? "",
+    turnDescription: row.turn_description ?? "",
+    chargeIn: row.charge_in ?? "",
+    chargeOut: row.charge_out ?? "",
+    object: row.object ?? "",
+    lightSource: row.light_source ?? "",
+    environment: row.environment ?? "",
+    backgroundLife: row.background_life ?? "",
+    register: row.register ?? "",
+    deletionTestResult: row.deletion_test_result ?? "",
+    longDraft: row.long_draft ?? "",
+    dialogueNotes: row.dialogue_notes ?? "",
+    setupsProvided: row.setups_provided ?? "",
+    payoffsSupported: row.payoffs_supported ?? "",
+    characterDecisionsSupported: row.character_decisions_supported ?? "",
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -52,18 +71,25 @@ export type SceneCardView = {
 /** Neutral incomplete states for fields not yet analyzed — never invent analysis. */
 export function sceneCardView(scene: Scene): SceneCardView {
   const meta = scene.metadata;
+  const chargeIn =
+    scene.chargeIn ||
+    (typeof meta.chargeIn === "string" && meta.chargeIn ? meta.chargeIn : "");
+  const chargeOut =
+    scene.chargeOut ||
+    (typeof meta.chargeOut === "string" && meta.chargeOut ? meta.chargeOut : "");
   return {
     heading: scene.heading || "Untitled scene",
     summary: scene.summary || "No summary yet",
-    chargeIn: typeof meta.chargeIn === "string" && meta.chargeIn ? meta.chargeIn : "incomplete",
-    chargeOut:
-      typeof meta.chargeOut === "string" && meta.chargeOut ? meta.chargeOut : "incomplete",
-    turnStatus:
-      meta.turnStatus === "present" || meta.turnStatus === "missing"
+    chargeIn: chargeIn || "incomplete",
+    chargeOut: chargeOut || "incomplete",
+    turnStatus: scene.turnDescription
+      ? "present"
+      : meta.turnStatus === "present" || meta.turnStatus === "missing"
         ? meta.turnStatus
         : "incomplete",
-    objectStatus:
-      meta.objectStatus === "present" || meta.objectStatus === "missing"
+    objectStatus: scene.object
+      ? "present"
+      : meta.objectStatus === "present" || meta.objectStatus === "missing"
         ? meta.objectStatus
         : "incomplete",
     estimatedPages: typeof meta.estimatedPages === "number" ? meta.estimatedPages : "incomplete",

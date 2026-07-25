@@ -40,6 +40,7 @@ export default async function ScenesPage({ params, searchParams }: PageProps) {
       <nav className="project-nav">
         <Link href={`/projects/${projectId}/structure`}>Structure</Link>
         <Link href={`/projects/${projectId}/beats`}>Beats</Link>
+        <Link href={`/projects/${projectId}/scene-lab`}>Scene Lab</Link>
         <Link href={`/projects/${projectId}/screenplay`}>Screenplay</Link>
       </nav>
       <aside className="scene-navigator" aria-label="Scene navigator">

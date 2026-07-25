@@ -1849,3 +1849,90 @@ tr[data-reference='true'] th {
     grid-template-columns: 1fr;
   }
 }
+
+/* Scene Lab */
+.scene-lab__toolbar,
+.scene-lab__modes,
+.scene-lab__step-nav,
+.scene-lab__micro-toolbar,
+.scene-lab__finding-actions,
+.scene-lab__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.75rem 0;
+}
+
+.scene-lab__modes button[aria-pressed='true'],
+.scene-lab__steps button[aria-current='step'] {
+  border-color: var(--foreground);
+  font-weight: 600;
+}
+
+.scene-lab__disclaimer {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  color: var(--muted, #5c5c5c);
+}
+
+.scene-lab__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.9fr);
+  gap: 1.25rem;
+}
+
+.scene-lab__steps ol,
+.scene-lab__findings ul,
+.scene-lab__cuts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.scene-lab__field,
+.scene-lab__form label,
+.scene-lab__micro-card label {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.scene-lab__field input,
+.scene-lab__field textarea,
+.scene-lab__form select,
+.scene-lab__micro-card input,
+.scene-lab__micro-card textarea,
+.scene-lab__micro-card select,
+.scene-lab__toolbar select {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  padding: 0.45rem 0.55rem;
+  font: inherit;
+  width: 100%;
+}
+
+.scene-lab__micro-card,
+.scene-lab__findings li,
+.scene-lab__impact {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0.75rem;
+}
+
+.scene-lab__findings li[data-severity='blocker'] {
+  border-color: #8a4b3a;
+}
+
+.scene-lab__findings li[data-severity='suggestion'] {
+  border-style: dashed;
+}
+
+@media (max-width: 960px) {
+  .scene-lab__layout {
+    grid-template-columns: 1fr;
+  }
+}
