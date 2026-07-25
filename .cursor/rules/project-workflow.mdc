@@ -1,0 +1,36 @@
+---
+description: Writing repository workflow and safety rules
+alwaysApply: true
+---
+
+# Writing project workflow
+
+## Repository boundary
+
+- Work only inside the `project-mtfbwu/writing` repository.
+- Never edit, clone, import, commit to, push to, or depend on the AVForge repository.
+- Do not reuse AVForge branding, routes, database names, authentication assumptions, or product-specific architecture.
+
+## Git safety
+
+- Never force-push.
+- Never commit secrets.
+- Never commit `.env.local` or other secret-bearing env files.
+- Never push broken code.
+- Do not automatically merge to `main`.
+
+## Quality gate before push
+
+Before every push, run and pass:
+
+1. `pnpm lint`
+2. `pnpm type-check`
+3. `pnpm test`
+4. `pnpm build`
+
+## Increment discipline
+
+- Commit completed increments with focused messages.
+- Push every completed increment to GitHub.
+- Prefer working on `develop` after the initial bootstrap.
+- When finishing an increment, report: branch, commit SHA, test results, and remaining risks.
