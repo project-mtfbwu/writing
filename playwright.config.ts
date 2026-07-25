@@ -18,8 +18,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm start",
+    command: process.env.CI
+      ? "node ./node_modules/next/dist/bin/next start"
+      : "node ./node_modules/next/dist/bin/next dev",
     url: "http://127.0.0.1:3000",
     reuseExistingServer: !process.env.CI,
+    timeout: 120_000,
   },
 });

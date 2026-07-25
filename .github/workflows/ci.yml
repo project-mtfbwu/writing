@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   quality:
-    name: Lint, type-check, test, build
+    name: Lint, type-check, unit, integration, build
     runs-on: ubuntu-latest
 
     steps:
@@ -48,5 +48,46 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
+      - name: Integration tests
+        run: pnpm test:integration
+
       - name: Production build
         run: pnpm build
+
+      - name: Dependency audit (prod)
+        run: pnpm audit --prod || true
+
+  e2e:
+    name: Playwright smoke
+    runs-on: ubuntu-latest
+    needs: quality
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.17.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Content index
+        run: pnpm content:index
+
+      - name: Production build
+        run: pnpm build
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Playwright smoke
+        run: pnpm test:e2e

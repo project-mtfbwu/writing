@@ -38,6 +38,7 @@ type BookReaderProps = {
   rawMarkdown: string;
   continuousChapters?: ChapterPayload[];
   related?: RelatedItem[];
+  bridges?: RelatedItem[];
 };
 
 export function BookReader({
@@ -51,6 +52,7 @@ export function BookReader({
   rawMarkdown,
   continuousChapters,
   related = [],
+  bridges = [],
 }: BookReaderProps) {
   const { preferences, setPreferences, updatePosition, position, ready } = useReader();
   const searchParams = useSearchParams();
@@ -293,6 +295,7 @@ export function BookReader({
           depth={preferences.depth}
           concepts={showsConnectedConcepts(preferences.depth) ? current.concepts : []}
           related={related}
+          bridges={bridges}
           chapterProgress={chapterProgress}
           bookProgress={bookProgress}
           open={studyOpen}

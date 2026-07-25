@@ -11,6 +11,7 @@ import {
   loadContentManifest,
 } from "@/lib/reader/catalog";
 import { getRelatedContent } from "@/lib/library/related";
+import { getStudyBridges } from "@/lib/library/bridges";
 import type { ChapterPayload } from "@/components/reader/BookReader";
 
 export const dynamic = "force-dynamic";
@@ -54,6 +55,7 @@ export default async function ChapterReaderPage({ params }: PageProps) {
     chapterId: chapter.id,
     blockIds: chapter.blockIds,
   });
+  const bridges = getStudyBridges(manifest, current.concepts);
 
   const document = manifest.documents.find((item) => item.id === bookId);
   const rawMarkdown = document ? readSourceMarkdown(document.relativePath) : "";
@@ -72,6 +74,7 @@ export default async function ChapterReaderPage({ params }: PageProps) {
           rawMarkdown={rawMarkdown}
           continuousChapters={continuousChapters}
           related={related}
+          bridges={bridges}
         />
       </Suspense>
     </ReaderProvider>

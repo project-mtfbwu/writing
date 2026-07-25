@@ -6,6 +6,15 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 import type { CharacterFields, PremiseFields } from "@/lib/projects/premise";
 import { assemblePremisePreview } from "@/lib/projects/premise";
+import { assertWriteRateLimit } from "@/lib/security/rate-limit";
+import { serverLog } from "@/lib/logging/server";
+import { mapBeatRow, mapSceneRow } from "@/lib/beats/map";
+import { mapElementRow } from "@/lib/screenplay/map";
+import {
+  buildFountainFromElements,
+  findingsToMarkdown,
+  projectToMarkdownSummary,
+} from "@/lib/export/project-export";
 
 export type ProjectActionState = {
   error: string | null;
@@ -277,6 +286,166 @@ export async function applyExerciseToProjectAction(input: {
   } catch (error) {
     return {
       error: error instanceof Error ? error.message : "Apply failed.",
+      message: null,
+    };
+  }
+}
+
+export async function deleteProjectAction(input: {
+  projectId: string;
+  confirmTitle: string;
+}): Promise<ProjectActionState> {
+  try {
+    const { supabase, user } = await requireUser();
+    assertWriteRateLimit(`delete-project:${user.id}`);
+    const { data: project } = await supabase
+      .from("projects")
+      .select("id, title, owner_id")
+      .eq("id", input.projectId)
+      .maybeSingle();
+    if (!project || project.owner_id !== user.id) {
+      return { error: "Only the project owner can delete this project.", message: null };
+    }
+    if (input.confirmTitle.trim() !== project.title) {
+      return { error: "Confirmation title does not match. Project not deleted.", message: null };
+    }
+    const { error } = await supabase.from("projects").delete().eq("id", input.projectId);
+    if (error) return { error: error.message, message: null };
+    revalidatePath("/projects");
+    revalidatePath("/");
+    return { error: null, message: "Project deleted. Other projects were not affected." };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Delete failed.",
+      message: null,
+    };
+  }
+}
+
+export async function exportProjectBundleAction(projectId: string): Promise<{
+  error: string | null;
+  bundle: import("@/lib/export/project-export").ProjectExportBundle | null;
+  markdownSummary: string | null;
+  findingsMarkdown: string | null;
+  fountain: string | null;
+  exerciseHistoryJson: string | null;
+}> {
+  try {
+    const { supabase, user } = await requireUser();
+    assertWriteRateLimit(`export-project:${user.id}`, 10);
+    const { data: membership } = await supabase
+      .from("project_members")
+      .select("id")
+      .eq("project_id", projectId)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!membership) {
+      return {
+        error: "Not authorized to export this project.",
+        bundle: null,
+        markdownSummary: null,
+        findingsMarkdown: null,
+        fountain: null,
+        exerciseHistoryJson: null,
+      };
+    }
+
+    const { data: project } = await supabase.from("projects").select("*").eq("id", projectId).single();
+    if (!project) {
+      return {
+        error: "Project not found.",
+        bundle: null,
+        markdownSummary: null,
+        findingsMarkdown: null,
+        fountain: null,
+        exerciseHistoryJson: null,
+      };
+    }
+
+    const draftId = project.current_draft_id;
+    const { data: beatRows } = draftId
+      ? await supabase.from("beats").select("*").eq("draft_id", draftId).order("sort_order")
+      : { data: [] as never[] };
+    const { data: sceneRows } = draftId
+      ? await supabase.from("scenes").select("*").eq("draft_id", draftId).order("sort_order")
+      : { data: [] as never[] };
+    const { data: elementRows } = draftId
+      ? await supabase
+          .from("screenplay_elements")
+          .select("*")
+          .eq("draft_id", draftId)
+          .order("sort_order")
+      : { data: [] as never[] };
+    const { data: findings } = await supabase
+      .from("scene_review_findings")
+      .select("*")
+      .eq("project_id", projectId);
+    const { data: attempts } = await supabase
+      .from("exercise_attempts")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("applied_project_id", projectId);
+
+    const beats = (beatRows ?? []).map(mapBeatRow);
+    const scenes = (sceneRows ?? []).map(mapSceneRow);
+    const elements = (elementRows ?? []).map(mapElementRow);
+    const bundle = {
+      project,
+      beats,
+      scenes,
+      elements,
+      findings: findings ?? [],
+      exerciseAttempts: attempts ?? [],
+      notesMarkdown: "",
+      exportedAt: new Date().toISOString(),
+    };
+
+    return {
+      error: null,
+      bundle,
+      markdownSummary: projectToMarkdownSummary(bundle),
+      findingsMarkdown: findingsToMarkdown(findings ?? []),
+      fountain: buildFountainFromElements(elements, project.title),
+      exerciseHistoryJson: JSON.stringify(attempts ?? [], null, 2),
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Export failed.",
+      bundle: null,
+      markdownSummary: null,
+      findingsMarkdown: null,
+      fountain: null,
+      exerciseHistoryJson: null,
+    };
+  }
+}
+
+export async function requestAccountDeletionAction(input: {
+  confirmPhrase: string;
+}): Promise<ProjectActionState> {
+  try {
+    const { supabase, user } = await requireUser();
+    if (input.confirmPhrase.trim() !== "DELETE MY ACCOUNT") {
+      return {
+        error: 'Type DELETE MY ACCOUNT exactly to request deletion.',
+        message: null,
+      };
+    }
+    assertWriteRateLimit(`account-delete:${user.id}`, 3);
+    serverLog.warn("Account deletion requested", { userId: user.id });
+    // Soft request: mark profile for operator follow-up. Does not wipe other users.
+    await supabase
+      .from("profiles")
+      .update({ display_name: `[deletion-requested:${new Date().toISOString()}]` })
+      .eq("id", user.id);
+    return {
+      error: null,
+      message:
+        "Deletion request recorded on your profile. An operator must complete account wipe; project data for other users is untouched.",
+    };
+  } catch (error) {
+    return {
+      error: error instanceof Error ? error.message : "Request failed.",
       message: null,
     };
   }

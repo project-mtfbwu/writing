@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Literata, Source_Sans_3 } from "next/font/google";
+import { AppShell } from "@/components/layout/AppShell";
 import "./globals.css";
 
 const literata = Literata({
@@ -30,7 +31,9 @@ export default function RootLayout({
       lang="en"
       className={`${literata.variable} ${sourceSans.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col font-sans">{children}</body>
+      <body className="flex min-h-full flex-col font-sans">
+        <AppShell>{children}</AppShell>
+      </body>
     </html>
   );
 }

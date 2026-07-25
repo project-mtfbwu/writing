@@ -1936,3 +1936,140 @@ tr[data-reference='true'] th {
     grid-template-columns: 1fr;
   }
 }
+
+/* App shell + home + reference */
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 0.5rem 0.75rem;
+  z-index: 100;
+}
+
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+}
+
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.site-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0.75rem 1rem;
+}
+
+.site-nav__brand {
+  font-family: var(--font-literata), serif;
+  font-size: 1.25rem;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.site-nav__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.site-nav__list a.is-active {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.site-nav__account {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.system-banner {
+  padding: 0.65rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.system-banner--warn {
+  background: #f4efe4;
+  border-bottom: 1px solid var(--border);
+}
+
+.system-banner--error {
+  background: #f6e8e4;
+  border-bottom: 1px solid #8a4b3a;
+}
+
+.home-page,
+.reference-page {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.home-page__hero h1 {
+  font-family: var(--font-literata), serif;
+  font-size: clamp(2.5rem, 6vw, 3.75rem);
+  margin: 0 0 0.75rem;
+}
+
+.home-dash__actions,
+.home-dash__lists,
+.reference-page__list {
+  list-style: none;
+  margin: 1.5rem 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.home-dash__label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted, #5c5c5c);
+  margin: 0 0 0.25rem;
+}
+
+.home-dash__lists {
+  grid-template-columns: 1fr 1fr;
+}
+
+.home-page__links,
+.account-panel section {
+  display: grid;
+  gap: 0.75rem;
+  margin: 1.5rem 0;
+}
+
+.account-panel label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .home-dash__lists {
+    grid-template-columns: 1fr;
+  }
+}

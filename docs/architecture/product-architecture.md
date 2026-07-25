@@ -1,97 +1,41 @@
-# Product architecture — Writing
+# Product architecture
 
-## Purpose
+## Modes
 
-Writing is a single product that combines:
+Writing projects craft through connected modes from one Markdown source:
 
-- a novel-like book reader
-- a technical learning handbook
-- interactive screenwriting lessons
-- a complete-system atlas
-- a writing project workspace
-- a beat board
-- a screenplay editor
-- a scene-testing system
+1. **Read** — book projection (`/read`, `/library`)
+2. **Learn** — curriculum (`/learn`)
+3. **Atlas** — concept map (`/atlas`)
+4. **Write** — projects, beats, scenes, screenplay (`/projects/...`)
+5. **Test** — Scene Lab rule reviews (`/test`, `/projects/.../scene-lab`)
+6. **Reference** — indexes into source (`/reference`)
 
-Working product name: **Writing**.
+## Navigation
 
-This repository is the only writable product surface. AVForge is out of scope and must not be referenced as an architectural dependency.
+Primary nav is shared via `AppShell` / `SiteNav`. Project sub-nav remains local to Write tools.
 
-## Product surfaces
+## Data boundary
 
-| Surface | Job |
-|---|---|
-| **Book Mode** | Continuous, comfortable reading of source Markdown as chapters |
-| **Guided Learning Mode** | Lesson-shaped progression with exercises and progress |
-| **Everything Mode** | Dense handbook view with all callouts, formulas, and evidence visible |
-| **Atlas Mode** | Concept graph / map across the complete system |
-| **Split Mode** | Side-by-side reading + application (project, editor, or reference) |
-| **Raw Markdown Mode** | Source fidelity view of the Markdown itself |
-| **Reference Mode** | Indexed formulas, Secret Sauce, ELI5s, evidence, reading lists |
+| Layer | Source of truth |
+| --- | --- |
+| Books, formulas, ELI5, Secret Sauce, evidence labels | `content/source/*.md` → generated manifest |
+| Curriculum structure | `src/data/learning/` pointing at Markdown refs |
+| Atlas graph | `src/data/atlas/system.ts` pointing at Markdown |
+| Auth, projects, beats, scenes, elements, findings | Supabase (RLS) |
 
-All surfaces read the **same** Markdown-derived content model. Modes are projections, not forks.
+## Cross-product flows
 
-## Reading experience goals
+- Reading study rail → Atlas concept + Learn lesson (explicit concept links only)
+- Learn exercise → Apply to project premise/character
+- Scene Lab finding → book/lesson/exercise/Atlas links
+- Beat board order ≡ screenplay scene projection (`projectStructureOrder`)
+- Scene card / screenplay nav → Scene Lab
 
-The reader should combine:
+## Non-goals for internal v1
 
-- commercial-novel readability (flow, typography, page comfort)
-- O’Reilly-style technical explanations and sidebars
-- Secret Sauce callouts
-- ELI5 explanations
-- real-world examples
-- formulas
-- evidence labels
-- bad-versus-better examples
-- exercises
-
-Typography and information design are the reference — not any authorial prose style.
-
-## Domain separation
-
-| Domain | Owns |
-|---|---|
-| **Content** | Books, source documents, chapters, sections, blocks, callouts, concepts, relationships, evidence, exercises, examples, references |
-| **Learning** | Courses, tracks, modules, lessons, attempts, progress, completion, lesson notes |
-| **Writing** | Users, projects, premises, characters, drafts, beats, scenes, screenplay elements, versions |
-| **Reader** | Position, depth, bookmarks, highlights, private notes |
-| **Review** | Rules, review runs, findings, finding status, rewrite passes |
-
-Content is authoritative and file-backed. Learning/Reader/Writing/Review store **user state** separately (local or database later). Supabase is deferred.
-
-## Core architectural law
-
-**Markdown is the single source of truth.**
-
-The same parsed content powers every mode. Never maintain separate copies of the same lesson for book, course, and reference.
-
-## Runtime stack
-
-- Next.js App Router
-- TypeScript (strict)
-- React
-- Tailwind CSS
-- pnpm
-- ESLint + Prettier
-- Vitest + React Testing Library
-- Playwright
-- Zod
-
-Node LTS is pinned in `.nvmrc`.
-
-## Source corpus (bootstrap)
-
-| File | Role |
-|---|---|
-| `content/source/screenwriting-syllabus.md` | Loop-structured curriculum; Track F evidence; modules 0–11 |
-| `content/source/complete-session-script-to-cut.md` | Complete system: foundations → formula stack → dimension → edit → samples → reference |
-
-Originals remain in `imports/` and are also copied to `content/source/` for the content pipeline. Source copies stay untouched during this bootstrap increment.
-
-## Non-goals for this increment
-
-- Book Mode implementation
-- Content parsing pipeline
-- Auth / Supabase
-- Full route implementations beyond the home placeholder
-- Fake dashboards or mock analytics
+- Split Mode side-by-side editor
+- PDF export
+- Automatic dialogue rewrite
+- Fake overall script scores
+- Claiming production readiness without operator-run migrations and e2e auth coverage

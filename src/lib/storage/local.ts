@@ -108,6 +108,16 @@ export function exportNotesAsMarkdown(notes: Note[]): string {
   return lines.join("\n").trimEnd() + "\n";
 }
 
+export function clearAnonymousLocalProgress(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(BOOKMARKS_KEY);
+  window.localStorage.removeItem(NOTES_KEY);
+  window.localStorage.removeItem(RECENT_KEY);
+  window.localStorage.removeItem("writing.learning.progress.v1");
+  window.localStorage.removeItem("writing.reader.preferences.v1");
+  window.localStorage.removeItem("writing.reader.position.v1");
+}
+
 export function bookmarkIdForTarget(input: {
   bookId: string;
   chapterId: string;

@@ -16,6 +16,10 @@ export function SceneCard({ scene, projectId, compact = false }: SceneCardProps)
     <article className={`beat-scene-card${compact ? " is-compact" : ""}`} data-scene-id={scene.id}>
       <header>
         <Link href={`/projects/${projectId}/scenes?scene=${scene.id}`}>{view.heading}</Link>
+        {" · "}
+        <Link href={`/projects/${projectId}/scene-lab?scene=${scene.id}`}>Scene Lab</Link>
+        {" · "}
+        <Link href={`/projects/${projectId}/screenplay`}>Screenplay</Link>
       </header>
       <p className="beat-scene-card__summary">{view.summary}</p>
       <dl className="beat-scene-card__meta">

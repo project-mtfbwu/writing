@@ -9,6 +9,7 @@ type StudyRailProps = {
   depth: ReadingDepth;
   concepts: ConceptLink[];
   related?: RelatedItem[];
+  bridges?: RelatedItem[];
   chapterProgress: number;
   bookProgress: number;
   open: boolean;
@@ -19,6 +20,7 @@ export function StudyRail({
   depth,
   concepts,
   related = [],
+  bridges = [],
   chapterProgress,
   bookProgress,
   open,
@@ -54,9 +56,22 @@ export function StudyRail({
 
         {related.length > 0 ? (
           <>
-            <p className="reader-rail__heading">Related</p>
+            <p className="reader-rail__heading">Related reading</p>
             <ul className="reader-concepts">
               {related.map((item) => (
+                <li key={item.href}>
+                  <Link href={item.href}>{item.label}</Link>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : null}
+
+        {bridges.length > 0 ? (
+          <>
+            <p className="reader-rail__heading">Learn & Atlas</p>
+            <ul className="reader-concepts">
+              {bridges.map((item) => (
                 <li key={item.href}>
                   <Link href={item.href}>{item.label}</Link>
                 </li>
@@ -84,7 +99,9 @@ export function StudyRail({
               <ul className="reader-concepts">
                 {concepts.map((concept) => (
                   <li key={concept.id}>
-                    <span>{concept.label}</span>
+                    <Link href={`/atlas/${encodeURIComponent(concept.target)}`}>
+                      {concept.label}
+                    </Link>
                     {!concept.resolved ? (
                       <span className="reader-rail__empty"> unresolved</span>
                     ) : null}

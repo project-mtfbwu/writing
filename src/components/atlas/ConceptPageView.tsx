@@ -109,6 +109,22 @@ export function ConceptPageView({
 
         <h2>Future project checks</h2>
         <p className="atlas-placeholder">{concept.projectCheckPlaceholder}</p>
+
+        <h2>Project entities</h2>
+        <ul>
+          <li>
+            <Link href="/projects">Open Write / projects</Link>
+          </li>
+          <li>
+            <Link href="/test">Open Test / Scene Lab hub</Link>
+          </li>
+        </ul>
+
+        <h2>Review findings</h2>
+        <p className="atlas-muted">
+          Findings are stored per project in Scene Lab. Open Test → Scene Lab, run a review, then
+          follow each finding’s source / lesson / exercise links back here.
+        </p>
       </section>
 
       <ConceptEverythingCard model={model} />
