@@ -1237,3 +1237,227 @@ tr[data-reference='true'] th {
     grid-template-columns: 1fr;
   }
 }
+
+/* Atlas */
+.atlas {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2.25rem 1.25rem 4rem;
+  font-family: var(--font-source-sans), system-ui, sans-serif;
+}
+
+.atlas h1,
+.atlas h2,
+.atlas h3,
+.atlas h4 {
+  font-family: var(--font-literata), Georgia, serif;
+}
+
+.atlas__kicker,
+.atlas-muted {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.atlas__kicker a,
+.atlas a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.atlas__lede {
+  max-width: 42rem;
+  line-height: 1.55;
+}
+
+.atlas__views,
+.atlas__zooms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 1rem 0;
+}
+
+.atlas__views a,
+.atlas__zooms a {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+  padding: 0.4rem 0.7rem;
+  font-size: 0.85rem;
+}
+
+.atlas__views a.is-active,
+.atlas__zooms a.is-active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.atlas-outline {
+  margin: 1.5rem 0 2rem;
+  border-top: 1px solid var(--border);
+  padding-top: 1rem;
+}
+
+.atlas-outline__search {
+  display: grid;
+  gap: 0.35rem;
+  max-width: 28rem;
+  margin-bottom: 1rem;
+}
+
+.atlas-outline__search input {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  padding: 0.55rem 0.7rem;
+  font: inherit;
+}
+
+.atlas-outline__list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.atlas-outline__edges {
+  margin: 0.35rem 0 0;
+  padding-left: 1.1rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.atlas-system {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.9fr);
+  gap: 1.5rem;
+}
+
+.atlas-system__hierarchy,
+.atlas-system__tracks ul,
+.atlas-system__modules ul,
+.atlas-system__project ul,
+.atlas-system__relations ul {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.atlas-system__hierarchy li,
+.atlas-system__tracks li,
+.atlas-system__modules li,
+.atlas-system__project li,
+.atlas-system__relations li {
+  padding: 0.55rem 0;
+  border-bottom: 1px solid color-mix(in oklab, var(--border) 75%, transparent);
+}
+
+.atlas-system__level {
+  display: inline-block;
+  min-width: 1.6rem;
+  margin-right: 0.4rem;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.atlas-pill {
+  display: inline-block;
+  margin-left: 0.35rem;
+  border: 1px solid var(--border);
+  padding: 0.1rem 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.atlas-pill--evidence {
+  color: var(--accent);
+}
+
+.atlas-matrix__scroll {
+  overflow-x: auto;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.atlas-matrix table {
+  width: 100%;
+  min-width: 52rem;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.atlas-matrix th,
+.atlas-matrix td {
+  vertical-align: top;
+  padding: 0.7rem;
+  border-right: 1px solid color-mix(in oklab, var(--border) 70%, transparent);
+}
+
+.atlas-matrix ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.atlas-formulas__levels,
+.atlas-everything__stack {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.atlas-formula {
+  white-space: pre-wrap;
+  border: 1px solid var(--border);
+  background: color-mix(in oklab, var(--surface) 85%, var(--border));
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  overflow-x: auto;
+}
+
+.atlas-evidence__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+}
+
+.atlas-evidence article {
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+}
+
+.atlas-concept-card,
+.atlas-concept-meta {
+  border-top: 1px solid var(--border);
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+}
+
+.atlas-layer {
+  margin-top: 1rem;
+}
+
+.atlas-placeholder {
+  border-left: 3px solid var(--border);
+  padding-left: 0.75rem;
+  color: var(--muted);
+}
+
+.atlas-snippet {
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 900px) {
+  .atlas-system {
+    grid-template-columns: 1fr;
+  }
+}
