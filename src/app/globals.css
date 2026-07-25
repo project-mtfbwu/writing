@@ -1730,3 +1730,122 @@ tr[data-reference='true'] th {
     grid-template-columns: 1fr;
   }
 }
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Screenplay editor */
+.screenplay__toolbar,
+.screenplay__drafts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.75rem 0 1rem;
+}
+
+.screenplay__status {
+  border: 1px solid var(--border);
+  padding: 0.35rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.screenplay__status[data-status='unsaved'],
+.screenplay__status[data-status='error'] {
+  border-color: #8a4b3a;
+}
+
+.screenplay__status[data-status='saved'] {
+  border-color: #3d6b4f;
+}
+
+.screenplay__layout {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr) minmax(0, 18rem);
+  gap: 1rem;
+}
+
+.screenplay__nav ul,
+.screenplay__nav ol {
+  list-style: none;
+  margin: 0.5rem 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.screenplay__editor {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 1rem;
+  min-height: 70vh;
+}
+
+.screenplay-line {
+  display: grid;
+  grid-template-columns: 8.5rem minmax(0, 1fr);
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.screenplay-line textarea,
+.screenplay-line select,
+.screenplay-line input,
+.screenplay__drafts input,
+.screenplay__drafts select,
+.screenplay__beat-assign select {
+  border: 1px solid var(--border);
+  background: var(--background);
+  color: var(--foreground);
+  padding: 0.4rem 0.5rem;
+  font: inherit;
+  width: 100%;
+}
+
+.screenplay-line--scene_heading textarea,
+.screenplay-line--scene_heading input,
+.screenplay-line--character textarea,
+.screenplay-line--character input,
+.screenplay-line--transition textarea,
+.screenplay-line--shot textarea {
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.screenplay-line--character textarea,
+.screenplay-line--character input,
+.screenplay-line--parenthetical textarea,
+.screenplay-line--dialogue textarea {
+  max-width: 28rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.screenplay-line--parenthetical textarea {
+  max-width: 22rem;
+}
+
+.screenplay__preview pre {
+  white-space: pre-wrap;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0.75rem;
+  font-size: 0.85rem;
+  max-height: 70vh;
+  overflow: auto;
+}
+
+@media (max-width: 960px) {
+  .screenplay__layout {
+    grid-template-columns: 1fr;
+  }
+}

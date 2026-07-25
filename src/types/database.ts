@@ -205,6 +205,7 @@ export type Database = {
           title: string;
           body: string;
           version: number;
+          revision: number;
           created_at: string;
           updated_at: string;
         };
@@ -214,6 +215,7 @@ export type Database = {
           title?: string;
           body?: string;
           version?: number;
+          revision?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -223,6 +225,106 @@ export type Database = {
           title?: string;
           body?: string;
           version?: number;
+          revision?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      draft_versions: {
+        Row: {
+          id: string;
+          project_id: string;
+          draft_id: string;
+          user_id: string;
+          revision: number;
+          label: string;
+          note: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          draft_id: string;
+          user_id: string;
+          revision: number;
+          label?: string;
+          note?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          draft_id?: string;
+          user_id?: string;
+          revision?: number;
+          label?: string;
+          note?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      screenplay_elements: {
+        Row: {
+          id: string;
+          project_id: string;
+          draft_id: string;
+          scene_id: string | null;
+          user_id: string;
+          element_type:
+            | "scene_heading"
+            | "action"
+            | "character"
+            | "parenthetical"
+            | "dialogue"
+            | "transition"
+            | "shot"
+            | "note";
+          content: string;
+          sort_order: number;
+          metadata: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          project_id: string;
+          draft_id: string;
+          scene_id?: string | null;
+          user_id: string;
+          element_type:
+            | "scene_heading"
+            | "action"
+            | "character"
+            | "parenthetical"
+            | "dialogue"
+            | "transition"
+            | "shot"
+            | "note";
+          content?: string;
+          sort_order?: number;
+          metadata?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          project_id?: string;
+          draft_id?: string;
+          scene_id?: string | null;
+          user_id?: string;
+          element_type?:
+            | "scene_heading"
+            | "action"
+            | "character"
+            | "parenthetical"
+            | "dialogue"
+            | "transition"
+            | "shot"
+            | "note";
+          content?: string;
+          sort_order?: number;
+          metadata?: Json;
           created_at?: string;
           updated_at?: string;
         };

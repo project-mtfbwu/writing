@@ -43,6 +43,7 @@ export default async function ProjectDetailPage({ params }: PageProps) {
         <Link href={`/projects/${project.id}/structure`}>Structure</Link>
         <Link href={`/projects/${project.id}/beats`}>Beats</Link>
         <Link href={`/projects/${project.id}/scenes`}>Scenes</Link>
+        <Link href={`/projects/${project.id}/screenplay`}>Screenplay</Link>
       </nav>
     </main>
   );
