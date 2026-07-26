@@ -11,6 +11,7 @@ type ServerDash = {
   nextStructuralAction: string | null;
   unresolvedFindingCount: number | null;
   supabaseConfigured: boolean;
+  demoMode?: boolean;
 };
 
 type LocalDash = {
@@ -96,10 +97,13 @@ export function HomeDashboard({ server }: { server: ServerDash }) {
             <Link href={`/projects/${server.currentProject.id}`}>
               {server.currentProject.title}
             </Link>
-          ) : server.supabaseConfigured ? (
+          ) : server.supabaseConfigured || server.demoMode ? (
             <Link href="/projects">Open projects</Link>
           ) : (
-            <p className="atlas-muted">Sign in and configure Supabase to write projects.</p>
+            <p className="atlas-muted">
+              <Link href="/login?next=/projects">Sign in with Test ID</Link> to write without
+              Supabase, or configure credentials for real accounts.
+            </p>
           )}
         </li>
         <li>

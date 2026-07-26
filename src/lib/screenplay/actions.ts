@@ -12,6 +12,21 @@ import {
 } from "@/lib/screenplay/model";
 import { exportFountain, exportPlainText } from "@/lib/screenplay/export";
 import type { Json } from "@/types/database";
+import { isDemoSession } from "@/lib/demo/session-state";
+import {
+  demoAssignSceneBeat,
+  demoClearCurrentDraft,
+  demoCreateDraft,
+  demoDeleteElement,
+  demoDuplicateDraft,
+  demoExportScreenplay,
+  demoLoadScreenplay,
+  demoRenameDraft,
+  demoReorderElements,
+  demoSwitchDraft,
+  demoSyncSceneHeading,
+  demoUpsertElement,
+} from "@/lib/demo/repository";
 
 export type ScreenplayActionResult = {
   error: string | null;
@@ -19,6 +34,7 @@ export type ScreenplayActionResult = {
 };
 
 async function requireMember(projectId: string) {
+  if (await isDemoSession()) throw new Error("DEMO_SESSION");
   if (!isSupabaseConfigured()) throw new Error("Supabase is not configured.");
   const supabase = await createServerSupabaseClient();
   const {
@@ -43,6 +59,9 @@ function revalidateScreenplay(projectId: string) {
 }
 
 export async function loadScreenplayDocument(projectId: string, draftId?: string) {
+  if (await isDemoSession()) {
+    return demoLoadScreenplay(projectId, draftId);
+  }
   const { supabase, user } = await requireMember(projectId);
   const activeDraftId = draftId ?? (await ensureDraftId(projectId));
   const [{ data: draft }, { data: elementRows }, { data: drafts }, { data: characters }] =
@@ -85,6 +104,10 @@ export async function upsertScreenplayElementAction(input: {
   expectedUpdatedAt: string | null;
 }): Promise<ScreenplayActionResult & { element?: ScreenplayElement }> {
   try {
+    if (await isDemoSession()) {
+      const element = await demoUpsertElement(input);
+      return { error: null, message: "Saved", element };
+    }
     const { supabase, user } = await requireMember(input.projectId);
     const row = {
       id: input.element.id,
@@ -132,6 +155,10 @@ export async function deleteScreenplayElementAction(input: {
   expectedUpdatedAt: string | null;
 }): Promise<ScreenplayActionResult> {
   try {
+    if (await isDemoSession()) {
+      await demoDeleteElement(input);
+      return { error: null, message: "Deleted" };
+    }
     const { supabase } = await requireMember(input.projectId);
     if (input.expectedUpdatedAt) {
       const { data: existing } = await supabase
@@ -167,6 +194,10 @@ export async function reorderScreenplayElementsAction(input: {
   expectedRevision: number;
 }): Promise<ScreenplayActionResult> {
   try {
+    if (await isDemoSession()) {
+      await demoReorderElements(input);
+      return { error: null, message: "Reordered" };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { data: draft } = await supabase
       .from("drafts")
@@ -203,6 +234,11 @@ export async function syncSceneHeadingAction(input: {
   sceneId: string | null;
 }): Promise<ScreenplayActionResult & { sceneId?: string }> {
   try {
+    if (await isDemoSession()) {
+      const sceneId = await demoSyncSceneHeading(input);
+      revalidateScreenplay(input.projectId);
+      return { error: null, message: "Scene attached", sceneId };
+    }
     const { supabase, user } = await requireMember(input.projectId);
     const parsed = parseSceneHeading(input.content);
     if (input.sceneId) {
@@ -264,6 +300,11 @@ export async function assignSceneBeatAction(input: {
   beatId: string | null;
 }): Promise<ScreenplayActionResult> {
   try {
+    if (await isDemoSession()) {
+      await demoAssignSceneBeat(input);
+      revalidateScreenplay(input.projectId);
+      return { error: null, message: "Beat assignment saved" };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { error } = await supabase
       .from("scenes")
@@ -282,6 +323,11 @@ export async function createDraftAction(input: {
   title: string;
 }): Promise<ScreenplayActionResult & { draftId?: string }> {
   try {
+    if (await isDemoSession()) {
+      const draftId = await demoCreateDraft(input);
+      revalidateScreenplay(input.projectId);
+      return { error: null, message: "Draft created", draftId };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { data, error } = await supabase
       .from("drafts")
@@ -309,6 +355,11 @@ export async function renameDraftAction(input: {
   title: string;
 }): Promise<ScreenplayActionResult> {
   try {
+    if (await isDemoSession()) {
+      await demoRenameDraft(input);
+      revalidateScreenplay(input.projectId);
+      return { error: null, message: "Draft renamed" };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { error } = await supabase
       .from("drafts")
@@ -327,6 +378,11 @@ export async function switchDraftAction(input: {
   draftId: string;
 }): Promise<ScreenplayActionResult> {
   try {
+    if (await isDemoSession()) {
+      await demoSwitchDraft(input);
+      revalidateScreenplay(input.projectId);
+      return { error: null, message: "Draft switched" };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { error } = await supabase
       .from("projects")
@@ -344,6 +400,11 @@ export async function clearCurrentDraftAction(input: {
   projectId: string;
 }): Promise<ScreenplayActionResult> {
   try {
+    if (await isDemoSession()) {
+      await demoClearCurrentDraft(input);
+      revalidateScreenplay(input.projectId);
+      return { error: null, message: "Current-draft indicator cleared" };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { error } = await supabase
       .from("projects")
@@ -367,6 +428,11 @@ export async function duplicateDraftAction(input: {
   title?: string;
 }): Promise<ScreenplayActionResult & { draftId?: string }> {
   try {
+    if (await isDemoSession()) {
+      const draftId = await demoDuplicateDraft(input);
+      revalidateScreenplay(input.projectId);
+      return { error: null, message: "Draft duplicated", draftId };
+    }
     const { supabase, user } = await requireMember(input.projectId);
     const { data: source } = await supabase
       .from("drafts")
@@ -432,6 +498,10 @@ export async function exportScreenplayAction(input: {
   format: "fountain" | "plaintext";
 }): Promise<{ error: string | null; content: string | null; filename: string | null }> {
   try {
+    if (await isDemoSession()) {
+      const exported = await demoExportScreenplay(input);
+      return { error: null, content: exported.content, filename: exported.filename };
+    }
     const { supabase } = await requireMember(input.projectId);
     const [{ data: draft }, { data: rows }] = await Promise.all([
       supabase.from("drafts").select("title").eq("id", input.draftId).single(),

@@ -116,8 +116,9 @@ export function AuthConfigNotice() {
   return (
     <aside className="auth-notice" role="status">
       <p>
-        Supabase credentials are not configured in this environment. Add these to{" "}
-        <code>.env.local</code> (never commit that file):
+        Supabase credentials are not configured in this environment. You can still write with the
+        Test ID button above. For real accounts, add these to <code>.env.local</code> (never commit
+        that file):
       </p>
       <ul>
         <li>

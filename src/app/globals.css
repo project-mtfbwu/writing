@@ -1536,6 +1536,13 @@ tr[data-reference='true'] th {
   color: var(--muted);
 }
 
+.auth-form--demo {
+  border: 1px solid var(--border);
+  padding: 1rem;
+  margin: 1.25rem 0;
+  background: color-mix(in srgb, var(--surface) 88%, var(--background));
+}
+
 .project-list {
   list-style: none;
   margin: 1.5rem 0 0;

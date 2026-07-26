@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { SceneLab } from "@/components/scene-lab/SceneLab";
 import { loadSceneLabDocument } from "@/lib/scene-lab/actions";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { requireWritingAccess } from "@/lib/demo/access";
 
 type PageProps = {
   params: Promise<{ projectId: string }>;
@@ -11,14 +10,9 @@ type PageProps = {
 };
 
 export default async function SceneLabPage({ params, searchParams }: PageProps) {
-  if (!isSupabaseConfigured()) redirect("/login?reason=supabase-unconfigured");
   const { projectId } = await params;
   const query = await searchParams;
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(`/login?next=/projects/${projectId}/scene-lab`);
+  const access = await requireWritingAccess(`/projects/${projectId}/scene-lab`);
 
   let document;
   try {
@@ -39,6 +33,7 @@ export default async function SceneLabPage({ params, searchParams }: PageProps) 
     <main className="project-page project-page--wide">
       <p className="atlas__kicker">
         <Link href={`/projects/${projectId}`}>{document.project.title}</Link> · Scene Lab
+        {access.mode === "demo" ? " · Test mode" : ""}
       </p>
       <h1>Scene Lab</h1>
       <nav className="project-nav">

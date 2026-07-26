@@ -15,6 +15,13 @@ import {
   findingsToMarkdown,
   projectToMarkdownSummary,
 } from "@/lib/export/project-export";
+import { isDemoSession } from "@/lib/demo/session-state";
+import {
+  demoCreateProject,
+  demoDeleteProject,
+  demoUpdatePremise,
+  demoUpsertCharacter,
+} from "@/lib/demo/repository";
 
 export type ProjectActionState = {
   error: string | null;
@@ -22,6 +29,9 @@ export type ProjectActionState = {
 };
 
 async function requireUser() {
+  if (await isDemoSession()) {
+    throw new Error("DEMO_SESSION");
+  }
   if (!isSupabaseConfigured()) {
     throw new Error("Supabase is not configured.");
   }
@@ -38,6 +48,17 @@ export async function createProjectAction(
   formData: FormData,
 ): Promise<ProjectActionState> {
   try {
+    if (await isDemoSession()) {
+      const title = String(formData.get("title") ?? "").trim();
+      if (!title) return { error: "Title is required.", message: null };
+      const format = String(formData.get("format") ?? "feature");
+      const genre = String(formData.get("genre") ?? "").trim();
+      const tone = String(formData.get("tone") ?? "").trim();
+      const data = await demoCreateProject({ title, format, genre, tone });
+      revalidatePath("/projects");
+      redirect(`/projects/${data.id}`);
+    }
+
     const { supabase, user } = await requireUser();
     const title = String(formData.get("title") ?? "").trim();
     if (!title) return { error: "Title is required.", message: null };
@@ -75,6 +96,13 @@ export async function updatePremiseAction(
   fields: PremiseFields,
 ): Promise<ProjectActionState> {
   try {
+    if (await isDemoSession()) {
+      await demoUpdatePremise(projectId, fields);
+      revalidatePath(`/projects/${projectId}`);
+      revalidatePath(`/projects/${projectId}/premise`);
+      return { error: null, message: "Premise saved." };
+    }
+
     const { supabase } = await requireUser();
     const preview = assemblePremisePreview(fields);
     const { error } = await supabase
@@ -124,6 +152,16 @@ export async function upsertCharacterAction(
   fields: CharacterFields,
 ): Promise<ProjectActionState & { characterId?: string }> {
   try {
+    if (await isDemoSession()) {
+      const id = await demoUpsertCharacter(projectId, characterId, fields);
+      revalidatePath(`/projects/${projectId}/characters`);
+      return {
+        error: null,
+        message: characterId ? "Character saved." : "Character created.",
+        characterId: id,
+      };
+    }
+
     const { supabase } = await requireUser();
     const payload = {
       project_id: projectId,
@@ -296,6 +334,13 @@ export async function deleteProjectAction(input: {
   confirmTitle: string;
 }): Promise<ProjectActionState> {
   try {
+    if (await isDemoSession()) {
+      await demoDeleteProject(input);
+      revalidatePath("/projects");
+      revalidatePath("/");
+      return { error: null, message: "Project deleted. Other projects were not affected." };
+    }
+
     const { supabase, user } = await requireUser();
     assertWriteRateLimit(`delete-project:${user.id}`);
     const { data: project } = await supabase

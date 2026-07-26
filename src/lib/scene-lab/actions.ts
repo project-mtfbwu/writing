@@ -23,6 +23,16 @@ import type { Scene } from "@/lib/beats/order";
 import { buildReaderDeepLink } from "@/lib/library/related";
 import { atlasHref, exerciseHref, lessonHref } from "@/lib/scene-lab/learning-links";
 import { mapBeatRow } from "@/lib/beats/map";
+import { isDemoSession } from "@/lib/demo/session-state";
+import {
+  demoDeletionTest,
+  demoDeleteMicroBeat,
+  demoLoadSceneLab,
+  demoRespondToFinding,
+  demoRunSceneReview,
+  demoUpdateSceneLabFields,
+  demoUpsertMicroBeat,
+} from "@/lib/demo/repository";
 
 export type SceneLabActionResult = {
   error: string | null;
@@ -30,6 +40,7 @@ export type SceneLabActionResult = {
 };
 
 async function requireMember(projectId: string) {
+  if (await isDemoSession()) throw new Error("DEMO_SESSION");
   if (!isSupabaseConfigured()) throw new Error("Supabase is not configured.");
   const supabase = await createServerSupabaseClient();
   const {
@@ -104,6 +115,9 @@ export type SceneReviewFindingView = {
 };
 
 export async function loadSceneLabDocument(projectId: string, sceneId?: string) {
+  if (await isDemoSession()) {
+    return demoLoadSceneLab(projectId, sceneId);
+  }
   const { supabase, user } = await requireMember(projectId);
   const draftId = await ensureDraftId(projectId);
   const [{ data: beatRows }, { data: sceneRows }, { data: project }] = await Promise.all([
@@ -208,6 +222,11 @@ export async function updateSceneLabFieldsAction(input: {
 }): Promise<SceneLabActionResult & { scene?: Scene }> {
   try {
     const parsed = SceneLabFieldsPatchSchema.parse(input.patch);
+    if (await isDemoSession()) {
+      const scene = await demoUpdateSceneLabFields({ ...input, patch: parsed });
+      revalidateSceneLab(input.projectId);
+      return { error: null, message: "Scene Lab fields saved.", scene };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { data, error } = await supabase
       .from("scenes")
@@ -270,6 +289,11 @@ export async function upsertMicroBeatAction(input: {
   microBeat: Partial<MicroBeat> & { id?: string };
 }): Promise<SceneLabActionResult & { microBeat?: MicroBeat }> {
   try {
+    if (await isDemoSession()) {
+      const microBeat = await demoUpsertMicroBeat(input);
+      revalidateSceneLab(input.projectId);
+      return { error: null, message: "Micro-beat saved.", microBeat };
+    }
     const { supabase, user } = await requireMember(input.projectId);
     const loadOrAbsorb = LoadOrAbsorbSchema.parse(input.microBeat.loadOrAbsorb ?? "Load");
     const row = {
@@ -304,6 +328,11 @@ export async function deleteMicroBeatAction(input: {
   microBeatId: string;
 }): Promise<SceneLabActionResult> {
   try {
+    if (await isDemoSession()) {
+      await demoDeleteMicroBeat(input);
+      revalidateSceneLab(input.projectId);
+      return { error: null, message: "Micro-beat deleted." };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { error } = await supabase.from("micro_beats").delete().eq("id", input.microBeatId);
     if (error) return { error: error.message, message: null };
@@ -322,6 +351,16 @@ export async function runSceneReviewAction(input: {
 }): Promise<SceneLabActionResult & { findings?: SceneReviewFindingView[]; runId?: string }> {
   try {
     const tags = z.array(DialogueCutTagSchema).optional().parse(input.dialogueCutTags) ?? [];
+    if (await isDemoSession()) {
+      const result = await demoRunSceneReview({ ...input, dialogueCutTags: tags });
+      revalidateSceneLab(input.projectId);
+      return {
+        error: null,
+        message: `Review complete — ${result.count} finding(s). No overall score is produced.`,
+        runId: result.runId,
+        findings: result.findings,
+      };
+    }
     const { supabase, user } = await requireMember(input.projectId);
     const { data: sceneRow } = await supabase
       .from("scenes")
@@ -413,6 +452,11 @@ export async function respondToFindingAction(input: {
 }): Promise<SceneLabActionResult> {
   try {
     const status = FindingStatusSchema.parse(input.status);
+    if (await isDemoSession()) {
+      await demoRespondToFinding({ ...input, status });
+      revalidateSceneLab(input.projectId);
+      return { error: null, message: `Finding marked ${status}. Scene text was not rewritten.` };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { error } = await supabase
       .from("scene_review_findings")
@@ -438,6 +482,11 @@ export async function deletionTestAction(input: {
   }
 > {
   try {
+    if (await isDemoSession()) {
+      const impact = await demoDeletionTest(input);
+      revalidateSceneLab(input.projectId);
+      return { error: null, message: "Deletion test recorded.", impact };
+    }
     const { supabase } = await requireMember(input.projectId);
     const draftId = await ensureDraftId(input.projectId);
     const [{ data: sceneRows }, { data: beatRows }] = await Promise.all([

@@ -6,12 +6,29 @@ import { createServerSupabaseClient } from "@/lib/supabase/server";
 export const dynamic = "force-dynamic";
 
 async function loadServerDashboard() {
+  const { isDemoSession } = await import("@/lib/demo/session-state");
+  if (await isDemoSession()) {
+    const { demoListProjects } = await import("@/lib/demo/repository");
+    const projects = await demoListProjects();
+    const current = projects[0] ?? null;
+    return {
+      currentProject: current ? { id: current.id, title: current.title } : null,
+      nextStructuralAction: current
+        ? `Continue writing “${current.title}” in test mode`
+        : "Create a project in test mode",
+      unresolvedFindingCount: null,
+      supabaseConfigured: false,
+      demoMode: true,
+    };
+  }
+
   if (!isSupabaseConfigured()) {
     return {
       currentProject: null,
       nextStructuralAction: null,
       unresolvedFindingCount: null,
       supabaseConfigured: false,
+      demoMode: false,
     };
   }
   try {
@@ -25,6 +42,7 @@ async function loadServerDashboard() {
         nextStructuralAction: "Sign in to continue a project",
         unresolvedFindingCount: null,
         supabaseConfigured: true,
+        demoMode: false,
       };
     }
 
@@ -84,6 +102,7 @@ async function loadServerDashboard() {
       nextStructuralAction,
       unresolvedFindingCount,
       supabaseConfigured: true,
+      demoMode: false,
     };
   } catch {
     return {
@@ -91,6 +110,7 @@ async function loadServerDashboard() {
       nextStructuralAction: "Could not reach projects — retry later",
       unresolvedFindingCount: null,
       supabaseConfigured: true,
+      demoMode: false,
     };
   }
 }

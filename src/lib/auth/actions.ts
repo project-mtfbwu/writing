@@ -57,6 +57,15 @@ export async function signInAction(
 }
 
 export async function signOutAction(): Promise<void> {
+  const { cookies } = await import("next/headers");
+  const { DEMO_SESSION_COOKIE } = await import("@/lib/demo/constants");
+  const { clearDemoStore } = await import("@/lib/demo/store");
+  const jar = await cookies();
+  if (jar.get(DEMO_SESSION_COOKIE)?.value) {
+    jar.delete(DEMO_SESSION_COOKIE);
+    await clearDemoStore();
+    redirect("/");
+  }
   if (!isSupabaseConfigured()) {
     redirect("/");
   }

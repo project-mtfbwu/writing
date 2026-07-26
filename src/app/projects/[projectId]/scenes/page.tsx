@@ -1,10 +1,10 @@
 import Link from "next/link";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { SceneEditorList } from "@/components/beats/SceneEditorList";
 import { loadStructureProjection } from "@/lib/beats/actions";
 import { projectStructureOrder } from "@/lib/beats/order";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
-import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { requireWritingAccess } from "@/lib/demo/access";
+import { demoGetProject } from "@/lib/demo/repository";
 
 type PageProps = {
   params: Promise<{ projectId: string }>;
@@ -12,21 +12,17 @@ type PageProps = {
 };
 
 export default async function ScenesPage({ params, searchParams }: PageProps) {
-  if (!isSupabaseConfigured()) redirect("/login?reason=supabase-unconfigured");
   const { projectId } = await params;
   const query = await searchParams;
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect(`/login?next=/projects/${projectId}/scenes`);
+  const access = await requireWritingAccess(`/projects/${projectId}/scenes`);
 
-  const { data: project } = await supabase
-    .from("projects")
-    .select("id, title")
-    .eq("id", projectId)
-    .maybeSingle();
-  if (!project) notFound();
+  const projectTitle =
+    access.mode === "demo"
+      ? (await demoGetProject(projectId))?.title
+      : (
+          await access.supabase.from("projects").select("id, title").eq("id", projectId).maybeSingle()
+        ).data?.title;
+  if (!projectTitle) notFound();
 
   const { beats, scenes } = await loadStructureProjection(projectId);
   const projection = projectStructureOrder(beats, scenes);
@@ -34,7 +30,8 @@ export default async function ScenesPage({ params, searchParams }: PageProps) {
   return (
     <main className="project-page project-page--wide">
       <p className="atlas__kicker">
-        <Link href={`/projects/${projectId}`}>{project.title}</Link> · Scenes
+        <Link href={`/projects/${projectId}`}>{projectTitle}</Link> · Scenes
+        {access.mode === "demo" ? " · Test mode" : ""}
       </p>
       <h1>Scenes</h1>
       <nav className="project-nav">

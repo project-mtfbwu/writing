@@ -14,6 +14,19 @@ import {
   type StructureProjection,
 } from "@/lib/beats/order";
 import { getSystemTemplate } from "@/lib/beats/templates";
+import { isDemoSession } from "@/lib/demo/session-state";
+import {
+  demoApplyBeatTemplate,
+  demoCreateBeat,
+  demoCreateScene,
+  demoDeleteBeat,
+  demoEnsureDraftId,
+  demoLoadStructure,
+  demoReassignScene,
+  demoReorderBeats,
+  demoUpdateBeat,
+  demoUpdateScene,
+} from "@/lib/demo/repository";
 
 export type BeatActionResult = {
   error: string | null;
@@ -21,6 +34,9 @@ export type BeatActionResult = {
 };
 
 async function requireMember(projectId: string) {
+  if (await isDemoSession()) {
+    throw new Error("DEMO_SESSION");
+  }
   if (!isSupabaseConfigured()) throw new Error("Supabase is not configured.");
   const supabase = await createServerSupabaseClient();
   const {
@@ -38,6 +54,9 @@ async function requireMember(projectId: string) {
 }
 
 export async function ensureDraftId(projectId: string): Promise<string> {
+  if (await isDemoSession()) {
+    return demoEnsureDraftId(projectId);
+  }
   const { supabase } = await requireMember(projectId);
   const { data, error } = await supabase.rpc("ensure_project_draft", {
     p_project_id: projectId,
@@ -72,6 +91,9 @@ export async function loadStructureProjection(projectId: string): Promise<{
   beats: Beat[];
   scenes: Scene[];
 }> {
+  if (await isDemoSession()) {
+    return demoLoadStructure(projectId);
+  }
   const { supabase } = await requireMember(projectId);
   const draftId = await ensureDraftId(projectId);
   const [{ data: beatRows }, { data: sceneRows }] = await Promise.all([
@@ -102,6 +124,11 @@ export async function createBeatAction(input: {
   colorKey?: BeatColorKey;
 }): Promise<BeatActionResult & { beat?: Beat }> {
   try {
+    if (await isDemoSession()) {
+      const beat = await demoCreateBeat(input);
+      revalidateStructure(input.projectId);
+      return { error: null, message: "Beat created.", beat };
+    }
     const { supabase, user } = await requireMember(input.projectId);
     const draftId = await ensureDraftId(input.projectId);
     const { data: existing } = await supabase
@@ -141,6 +168,11 @@ export async function updateBeatAction(input: {
   targetPercentage?: number | null;
 }): Promise<BeatActionResult> {
   try {
+    if (await isDemoSession()) {
+      await demoUpdateBeat(input);
+      revalidateStructure(input.projectId);
+      return { error: null, message: "Beat updated." };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { error } = await supabase
       .from("beats")
@@ -170,6 +202,11 @@ export async function deleteBeatAction(input: {
     if (!input.confirm) {
       return { error: "Confirm deletion. Scenes will move to Unassigned.", message: null };
     }
+    if (await isDemoSession()) {
+      await demoDeleteBeat(input);
+      revalidateStructure(input.projectId);
+      return { error: null, message: "Beat deleted. Scenes moved to Unassigned." };
+    }
     const { supabase } = await requireMember(input.projectId);
     // ON DELETE SET NULL moves scenes; never cascade-delete scenes.
     const { error } = await supabase.from("beats").delete().eq("id", input.beatId);
@@ -187,6 +224,20 @@ export async function reorderBeatsAction(input: {
   expectedUpdatedAtById: Record<string, string>;
 }): Promise<BeatActionResult> {
   try {
+    if (await isDemoSession()) {
+      const applied = await demoReorderBeats(input);
+      if (!applied.ok) {
+        return {
+          error:
+            applied.reason === "stale-version"
+              ? "Reorder conflict: another change landed first. Reloading."
+              : "Reorder failed: missing beat.",
+          message: null,
+        };
+      }
+      revalidateStructure(input.projectId);
+      return { error: null, message: "Beats reordered." };
+    }
     const { supabase } = await requireMember(input.projectId);
     const draftId = await ensureDraftId(input.projectId);
     const { data } = await supabase.from("beats").select("*").eq("draft_id", draftId);
@@ -223,6 +274,11 @@ export async function createSceneAction(input: {
   summary?: string;
 }): Promise<BeatActionResult & { scene?: Scene }> {
   try {
+    if (await isDemoSession()) {
+      const scene = await demoCreateScene(input);
+      revalidateStructure(input.projectId);
+      return { error: null, message: "Scene created.", scene };
+    }
     const { supabase, user } = await requireMember(input.projectId);
     const draftId = await ensureDraftId(input.projectId);
     let existingQuery = supabase
@@ -267,6 +323,11 @@ export async function updateSceneAction(input: {
   status?: Scene["status"];
 }): Promise<BeatActionResult> {
   try {
+    if (await isDemoSession()) {
+      await demoUpdateScene(input);
+      revalidateStructure(input.projectId);
+      return { error: null, message: "Scene updated." };
+    }
     const { supabase } = await requireMember(input.projectId);
     const { error } = await supabase
       .from("scenes")
@@ -294,13 +355,29 @@ export async function reassignSceneAction(input: {
   expectedUpdatedAtById: Record<string, string>;
 }): Promise<BeatActionResult> {
   try {
+    if (await isDemoSession()) {
+      const applied = await demoReassignScene(input);
+      if (!applied.ok) {
+        return {
+          error:
+            applied.reason === "stale-version"
+              ? "Reorder conflict: another change landed first. Reloading."
+              : "Reassign failed.",
+          message: null,
+        };
+      }
+      revalidateStructure(input.projectId);
+      return { error: null, message: "Scene moved." };
+    }
     const { supabase } = await requireMember(input.projectId);
     const draftId = await ensureDraftId(input.projectId);
     const { data: sceneRows } = await supabase.from("scenes").select("*").eq("draft_id", draftId);
     const scenes = (sceneRows ?? []).map(mapSceneRow);
     const targetScenes = scenes
       .filter((scene) =>
-        input.beatId ? scene.beatId === input.beatId || scene.id === input.sceneId : scene.beatId === null || scene.id === input.sceneId,
+        input.beatId
+          ? scene.beatId === input.beatId || scene.id === input.sceneId
+          : scene.beatId === null || scene.id === input.sceneId,
       )
       .map((scene) =>
         scene.id === input.sceneId ? { ...scene, beatId: input.beatId } : scene,
@@ -343,6 +420,11 @@ export async function applyBeatTemplateAction(input: {
   templateKey: string;
 }): Promise<BeatActionResult & { added: number }> {
   try {
+    if (await isDemoSession()) {
+      const result = await demoApplyBeatTemplate(input);
+      revalidateStructure(input.projectId);
+      return { error: null, message: result.message, added: result.added };
+    }
     const template = getSystemTemplate(input.templateKey);
     if (!template) return { error: "Unknown template.", message: null, added: 0 };
     const { supabase, user } = await requireMember(input.projectId);
